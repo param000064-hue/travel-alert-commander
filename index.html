@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Alert Commander</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Tabler Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+    <style>
+        :root {
+            --bg: #0a0c10;
+            --surface: #161b22;
+            --surface-alt: #21262d;
+            --text: #e6edf3;
+            --text-muted: #8b949e;
+            --info: #4f8ef7;
+            --dest: #7c5cfc;
+            --safe: #2dd4a0;
+            --warning: #f5a623;
+            --danger: #f75555;
+            --font-mono: 'DM Mono', monospace;
+            --font-heading: 'Syne', sans-serif;
+            --border-radius: 8px;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-mono);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-heading);
+            margin-top: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background: rgba(22, 27, 34, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--surface-alt);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .pulse-dot {
+            width: 12px;
+            height: 12px;
+            background-color: var(--safe);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--safe);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(45, 212, 160, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(45, 212, 160, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(45, 212, 160, 0); }
+        }
+
+        .logo h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--text);
+            text-shadow: 0 0 10px rgba(255,255,255,0.1);
+        }
+
+        .clock {
+            font-size: 1.2rem;
+            color: var(--info);
+            font-weight: 500;
+            text-shadow: 0 0 8px rgba(79, 142, 247, 0.5);
+        }
+
+        /* Layout */
+        .container {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 25px;
+            padding: 25px;
+            flex: 1;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--surface-alt);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, var(--info), var(--dest));
+            opacity: 0.5;
+        }
+
+        .card h2 {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--surface-alt);
+            padding-bottom: 10px;
+        }
+
+        /* Inputs & Buttons */
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        input[type="text"], input[type="password"], input[type="time"] {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--surface-alt);
+            color: var(--text);
+            padding: 10px 12px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--info);
+            box-shadow: 0 0 8px rgba(79, 142, 247, 0.2);
+        }
+
+        button {
+            background: var(--surface-alt);
+            color: var(--text);
+            border: 1px solid var(--surface-alt);
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-family: var(--font-heading);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            width: 100%;
+        }
+
+        button:hover {
+            background: var(--surface);
+            border-color: var(--text-muted);
+        }
+
+        button.primary {
+            background: rgba(79, 142, 247, 0.1);
+            color: var(--info);
+            border-color: var(--info);
+        }
+        button.primary:hover {
+            background: rgba(79, 142, 247, 0.2);
+            box-shadow: 0 0 15px rgba(79, 142, 247, 0.3);
+        }
+
+        button.action {
+            background: rgba(124, 92, 252, 0.1);
+            color: var(--dest);
+            border-color: var(--dest);
+        }
+        button.action:hover {
+            background: rgba(124, 92, 252, 0.2);
+            box-shadow: 0 0 15px rgba(124, 92, 252, 0.3);
+        }
+
+        button.danger {
+            background: rgba(247, 85, 85, 0.1);
+            color: var(--danger);
+            border-color: var(--danger);
+            width: auto;
+        }
+        button.danger:hover {
+            background: rgba(247, 85, 85, 0.2);
+        }
+
+        /* Stops List */
+        .stops-list {
+            margin: 15px 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .stop-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg);
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            border-left: 3px solid var(--dest);
+        }
+
+        .stop-item span {
+            font-size: 0.9rem;
+        }
+
+        .stop-item button {
+            width: auto;
+            padding: 4px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+        }
+
+        .stop-item button:hover {
+            color: var(--danger);
+        }
+
+        .counter-badge {
+            background: var(--surface-alt);
+            color: var(--text);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: auto;
+        }
+
+        /* Scheduled Alerts */
+        .alert-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg);
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            border-left: 3px solid var(--info);
+        }
+
+        .alert-time {
+            font-weight: bold;
+            color: var(--info);
+        }
+
+        .countdown {
+            font-size: 0.85rem;
+            color: var(--warning);
+        }
+
+        /* Results Panel */
+        .results-panel {
+            display: none;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .result-box {
+            background: var(--bg);
+            border: 1px solid var(--surface-alt);
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+
+        .result-box h3 {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .result-value {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        /* Color Tags */
+        .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .tag-safe { background: rgba(45, 212, 160, 0.1); color: var(--safe); border: 1px solid var(--safe); }
+        .tag-warning { background: rgba(245, 166, 35, 0.1); color: var(--warning); border: 1px solid var(--warning); }
+        .tag-danger { background: rgba(247, 85, 85, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+
+        .list-items {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        .list-items li {
+            padding: 4px 0;
+            border-bottom: 1px dashed var(--surface-alt);
+        }
+        .list-items li:last-child {
+            border-bottom: none;
+        }
+
+        /* Voice Briefing Box */
+        .briefing-box {
+            margin-top: 20px;
+            background: rgba(79, 142, 247, 0.05);
+            border: 1px solid rgba(79, 142, 247, 0.2);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            position: relative;
+        }
+
+        .briefing-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .voice-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Visualizer */
+        .visualizer {
+            display: flex;
+            gap: 4px;
+            height: 30px;
+            align-items: center;
+            opacity: 0.2;
+            transition: opacity 0.3s;
+        }
+        .visualizer.active {
+            opacity: 1;
+        }
+        .visualizer .bar {
+            width: 4px;
+            background: var(--safe);
+            height: 20%;
+            border-radius: 2px;
+            transition: height 0.1s ease;
+        }
+        .visualizer.active .bar {
+            animation: bounce 0.5s infinite alternate;
+        }
+        .visualizer.active .bar:nth-child(1) { animation-delay: 0.0s; }
+        .visualizer.active .bar:nth-child(2) { animation-delay: 0.1s; }
+        .visualizer.active .bar:nth-child(3) { animation-delay: 0.2s; }
+        .visualizer.active .bar:nth-child(4) { animation-delay: 0.3s; }
+        .visualizer.active .bar:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0% { height: 20%; }
+            100% { height: 100%; box-shadow: 0 0 8px var(--safe); }
+        }
+
+        /* Shimmer Loading */
+        .shimmer-wrapper {
+            display: none;
+        }
+        .shimmer {
+            height: 100px;
+            background: #161b22;
+            background-image: linear-gradient(to right, #161b22 0%, #21262d 20%, #161b22 40%, #161b22 100%);
+            background-repeat: no-repeat;
+            background-size: 800px 100%; 
+            animation: placeholderShimmer 1.5s linear infinite forwards;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            border: 1px solid var(--surface-alt);
+        }
+        .shimmer.large { height: 200px; }
+
+        @keyframes placeholderShimmer {
+            0% { background-position: -468px 0; }
+            100% { background-position: 468px 0; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--surface-alt);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <div class="pulse-dot" id="statusDot"></div>
+            <h1>Travel Alert Commander</h1>
+        </div>
+        <div class="clock" id="clock">00:00:00</div>
+    </header>
+
+    <div class="container">
+        <!-- Sidebar Controls -->
+        <aside>
+            <!-- System Settings -->
+            <div class="card">
+                <h2><i class="ti ti-settings"></i> System Config</h2>
+                <div class="input-group">
+                    <label>Provider</label>
+                    <select id="apiProvider" onchange="toggleProvider()" style="width: 100%; background: var(--bg); border: 1px solid var(--surface-alt); color: var(--text); padding: 10px 12px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.95rem; margin-bottom: 10px;">
+                        <option value="groq">Groq</option>
+                        <option value="anthropic">Anthropic</option>
+                    </select>
+                </div>
+                <div class="input-group" id="anthropicKeyGroup" style="display: none;">
+                    <label>Anthropic API Key</label>
+                    <input type="password" id="apiKey" placeholder="sk-ant-...">
+                </div>
+                <div class="input-group" id="groqKeyGroup">
+                    <label>Groq API Key</label>
+                    <input type="password" id="groqApiKey" placeholder="gsk_..." value="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">
+                </div>
+                <div class="input-group" style="display:flex; gap:10px;">
+                    <button onclick="testVoice()"><i class="ti ti-volume"></i> Test Voice</button>
+                    <button onclick="requestNotificationPermission()"><i class="ti ti-bell"></i> Allow Prompts</button>
+                </div>
+            </div>
+
+            <!-- Route Setup -->
+            <div class="card">
+                <h2>
+                    <i class="ti ti-route"></i> Route Setup
+                    <span class="counter-badge" id="stopCounter">0 Stops</span>
+                </h2>
+                
+                <div class="input-group">
+                    <label>Current Location (Origin)</label>
+                    <input type="text" id="originInput" placeholder="e.g. New York, NY">
+                </div>
+
+                <div class="input-group">
+                    <label>Add Destination Stop</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="stopInput" placeholder="e.g. Philadelphia, PA" onkeypress="if(event.key==='Enter') addStop()">
+                        <button onclick="addStop()" style="width: auto;"><i class="ti ti-plus"></i></button>
+                    </div>
+                </div>
+
+                <div class="stops-list" id="stopsList">
+                    <!-- Stops inserted here -->
+                </div>
+
+                <button class="primary" onclick="analyzeRoute()">
+                    <i class="ti ti-radar"></i> Analyze Route
+                </button>
+                <button onclick="clearAll()" style="margin-top: 10px;">
+                    <i class="ti ti-trash"></i> Clear All
+                </button>
+            </div>
+
+            <!-- Notification Scheduler -->
+            <div class="card">
+                <h2><i class="ti ti-clock"></i> Scheduled Alerts</h2>
+                <div class="input-group">
+                    <label>Set Briefing Time</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="time" id="alertTime">
+                        <button class="action" onclick="scheduleAlert()" style="width: auto;">Set Alert</button>
+                    </div>
+                </div>
+
+                <div class="stops-list" id="alertsList">
+                    <!-- Alerts inserted here -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main>
+            <!-- Loading State -->
+            <div class="shimmer-wrapper" id="loadingState">
+                <div class="shimmer large"></div>
+                <div style="display:flex; gap:20px;">
+                    <div class="shimmer" style="flex:1;"></div>
+                    <div class="shimmer" style="flex:1;"></div>
+                </div>
+            </div>
+
+            <!-- Analysis Results -->
+            <div class="results-panel" id="resultsPanel">
+                <div class="card" style="border-color: var(--info);">
+                    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2><i class="ti ti-dashboard"></i> Live Telemetry</h2>
+                        <div id="resRiskTag" class="tag tag-safe">RISK: LOW</div>
+                    </div>
+                    
+                    <!-- Route Map -->
+                    <div class="map-container" style="margin-bottom: 20px; border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--surface-alt); height: 350px; background: #161b22; position: relative;">
+                        <iframe id="routeMap" width="100%" height="100%" frameborder="0" style="border:0; filter: invert(90%) hue-rotate(180deg) contrast(85%);" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
+                    </div>
+
+                    <div class="results-grid">
+                        <!-- Traffic -->
+                        <div class="result-box">
+                            <h3><i class="ti ti-car"></i> Traffic Status</h3>
+                            <div class="result-value" id="resTraffic" style="margin-bottom: 10px;">-</div>
+                            <div style="font-size: 0.9rem; color: var(--text-muted);" id="resTrafficSummary">-</div>
+                            <h3 style="margin-top: 15px;">Incidents</h3>
+                            <ul class="list-items" id="resIncidents"></ul>
+                        </div>
+
+                        <!-- Routing -->
+                        <div class="result-box">
+                            <h3><i class="ti ti-map-pin"></i> Route Insights</h3>
+                            <div style="margin-bottom: 10px;">
+                                <span style="font-size:0.85rem; color:var(--text-muted);">Estimated Time</span><br>
+                                <span class="result-value" id="resETA" style="color: var(--dest);">-</span>
+                            </div>
+                            <div>
+                                <span style="font-size:0.85rem; color:var(--text-muted);">Alternate Route</span><br>
+                                <span style="font-size:0.9rem;" id="resAltRoute">-</span>
+                            </div>
+                        </div>
+
+                        <!-- Weather -->
+                        <div class="result-box">
+                            <h3><i class="ti ti-cloud"></i> Environmental Data</h3>
+                            <div style="display:flex; gap:15px; margin-bottom: 10px;">
+                                <div>
+                                    <span style="font-size:0.85rem; color:var(--text-muted);">Origin</span><br>
+                                    <span id="resWeatherOrigin">-</span>
+                                </div>
+                                <div>
+                                    <span style="font-size:0.85rem; color:var(--text-muted);">Destination</span><br>
+                                    <span id="resWeatherDest">-</span>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:15px; margin-bottom: 10px;">
+                                <div>
+                                    <span style="font-size:0.85rem; color:var(--text-muted);">Temp</span><br>
+                                    <span class="result-value" id="resTemp">-</span>
+                                </div>
+                                <div>
+                                    <span style="font-size:0.85rem; color:var(--text-muted);">Humidity</span><br>
+                                    <span class="result-value" id="resHumidity">-</span>
+                                </div>
+                            </div>
+                            <div>
+                                <span style="font-size:0.85rem; color:var(--text-muted);">Advisory</span><br>
+                                <span style="font-size:0.9rem; color:var(--warning);" id="resWeatherAdvisory">-</span>
+                            </div>
+                        </div>
+
+                        <!-- Alerts -->
+                        <div class="result-box">
+                            <h3><i class="ti ti-alert-triangle"></i> Active Alerts</h3>
+                            <ul class="list-items" id="resActiveAlerts"></ul>
+                        </div>
+                    </div>
+
+                    <!-- Spoken Briefing -->
+                    <div class="briefing-box">
+                        <h3><i class="ti ti-message-chatbot"></i> AI Executive Briefing</h3>
+                        <div class="briefing-text" id="resBriefingText">No briefing available.</div>
+                        <div class="voice-controls">
+                            <button class="primary" style="width:auto;" onclick="speakAnalyzedBriefing()">
+                                <i class="ti ti-player-play"></i> Speak Briefing
+                            </button>
+                            <button class="danger" onclick="stopSpeaking()">
+                                <i class="ti ti-player-stop"></i>
+                            </button>
+                            <div class="visualizer" id="visualizer">
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- State ---
+        function toggleProvider() {
+            const provider = document.getElementById('apiProvider').value;
+            if(provider === 'groq') {
+                document.getElementById('groqKeyGroup').style.display = 'block';
+                document.getElementById('anthropicKeyGroup').style.display = 'none';
+            } else {
+                document.getElementById('groqKeyGroup').style.display = 'none';
+                document.getElementById('anthropicKeyGroup').style.display = 'block';
+            }
+        }
+        
+        let stops = [];
+        let scheduledAlerts = [];
+        let analyzedData = null;
+        let currentUtterance = null;
+        let timerInterval = null;
+
+        // --- Clock ---
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-US', { hour12: false });
+        }, 1000);
+
+        // --- Route Setup ---
+        function addStop() {
+            const input = document.getElementById('stopInput');
+            const val = input.value.trim();
+            if (val) {
+                stops.push(val);
+                input.value = '';
+                renderStops();
+            }
+        }
+
+        function removeStop(index) {
+            stops.splice(index, 1);
+            renderStops();
+        }
+
+        function renderStops() {
+            const list = document.getElementById('stopsList');
+            list.innerHTML = '';
+            stops.forEach((stop, idx) => {
+                list.innerHTML += `
+                    <div class="stop-item">
+                        <span>${idx + 1}. ${stop}</span>
+                        <button onclick="removeStop(${idx})"><i class="ti ti-x"></i></button>
+                    </div>
+                `;
+            });
+            document.getElementById('stopCounter').innerText = `${stops.length} Stops`;
+        }
+
+        function clearAll() {
+            stops = [];
+            renderStops();
+            document.getElementById('originInput').value = '';
+            document.getElementById('resultsPanel').style.display = 'none';
+            analyzedData = null;
+            scheduledAlerts.forEach(a => clearTimeout(a.timeoutId));
+            scheduledAlerts = [];
+            renderAlerts();
+            stopSpeaking();
+        }
+
+        // --- Notifications & Voice ---
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        alert("Push notifications enabled.");
+                    }
+                });
+            } else {
+                alert("Browser does not support notifications.");
+            }
+        }
+
+        function testVoice() {
+            speak("Test alert activated. Communication systems are functional.");
+        }
+
+        function speakAnalyzedBriefing() {
+            if (analyzedData && analyzedData.spokenBriefing) {
+                speak(analyzedData.spokenBriefing);
+            } else {
+                speak("No route data has been analyzed yet.");
+            }
+        }
+
+        function speak(text) {
+            stopSpeaking();
+            
+            if (!("speechSynthesis" in window)) {
+                alert("Speech synthesis not supported in this browser.");
+                return;
+            }
+
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            currentUtterance.rate = 0.95;
+            currentUtterance.pitch = 1.05;
+            
+            const voices = window.speechSynthesis.getVoices();
+            const engVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
+            if (engVoice) currentUtterance.voice = engVoice;
+            
+            const visualizer = document.getElementById('visualizer');
+            const dot = document.getElementById('statusDot');
+
+            currentUtterance.onstart = () => {
+                visualizer.classList.add('active');
+                dot.style.backgroundColor = 'var(--info)';
+                dot.style.boxShadow = '0 0 10px var(--info)';
+            };
+            currentUtterance.onend = () => {
+                visualizer.classList.remove('active');
+                dot.style.backgroundColor = 'var(--safe)';
+                dot.style.boxShadow = '0 0 10px var(--safe)';
+            };
+            currentUtterance.onerror = () => {
+                visualizer.classList.remove('active');
+                dot.style.backgroundColor = 'var(--safe)';
+                dot.style.boxShadow = '0 0 10px var(--safe)';
+            };
+            
+            window.speechSynthesis.speak(currentUtterance);
+        }
+
+        function stopSpeaking() {
+            if ("speechSynthesis" in window) {
+                window.speechSynthesis.cancel();
+            }
+            document.getElementById('visualizer').classList.remove('active');
+            const dot = document.getElementById('statusDot');
+            dot.style.backgroundColor = 'var(--safe)';
+            dot.style.boxShadow = '0 0 10px var(--safe)';
+        }
+
+        // --- Scheduler ---
+        function scheduleAlert() {
+            const timeInput = document.getElementById('alertTime').value;
+            if (!timeInput) return;
+            
+            const now = new Date();
+            const [hours, minutes] = timeInput.split(':').map(Number);
+            let target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+            
+            if (target < now) {
+                target.setDate(target.getDate() + 1); // schedule for tomorrow
+            }
+            
+            const id = Date.now();
+            const timeToWait = target.getTime() - now.getTime();
+            
+            const timeoutId = setTimeout(() => {
+                triggerAlert(id);
+            }, timeToWait);
+            
+            scheduledAlerts.push({ id, targetTime: target, timeoutId, timeString: timeInput });
+            document.getElementById('alertTime').value = '';
+            renderAlerts();
+
+            if (!timerInterval) {
+                timerInterval = setInterval(updateTimers, 1000);
+            }
+        }
+
+        function removeAlert(id) {
+            const idx = scheduledAlerts.findIndex(a => a.id === id);
+            if (idx > -1) {
+                clearTimeout(scheduledAlerts[idx].timeoutId);
+                scheduledAlerts.splice(idx, 1);
+                renderAlerts();
+            }
+        }
+
+        function renderAlerts() {
+            const list = document.getElementById('alertsList');
+            list.innerHTML = '';
+            scheduledAlerts.forEach(alert => {
+                list.innerHTML += `
+                    <div class="alert-item">
+                        <div>
+                            <div class="alert-time">${alert.timeString}</div>
+                            <div class="countdown" id="timer-${alert.id}">Calculating...</div>
+                        </div>
+                        <button onclick="removeAlert(${alert.id})"><i class="ti ti-x"></i></button>
+                    </div>
+                `;
+            });
+            updateTimers();
+        }
+
+        function updateTimers() {
+            const now = new Date();
+            scheduledAlerts.forEach(alert => {
+                const diff = alert.targetTime - now;
+                const el = document.getElementById(`timer-${alert.id}`);
+                if (el && diff > 0) {
+                    const h = Math.floor(diff / 3600000);
+                    const m = Math.floor((diff % 3600000) / 60000);
+                    const s = Math.floor((diff % 60000) / 1000);
+                    el.innerText = `T-MINUS ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                }
+            });
+        }
+
+        function triggerAlert(id) {
+            removeAlert(id);
+            const text = analyzedData ? analyzedData.spokenBriefing : "Attention Commander. Scheduled alert triggered. Route analysis is pending.";
+            speak(text);
+            
+            if ("Notification" in window && Notification.permission === 'granted') {
+                new Notification("Travel Alert Commander", { 
+                    body: text,
+                    icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iIzRmOGVmNyIvPjwvc3ZnPg=='
+                });
+            }
+        }
+
+        // --- AI Agent logic ---
+        async function analyzeRoute() {
+            const provider = document.getElementById('apiProvider').value;
+            const apiKey = provider === 'groq' ? document.getElementById('groqApiKey').value.trim() : document.getElementById('apiKey').value.trim();
+            if (!apiKey) {
+                alert(`System Error: ${provider === 'groq' ? 'Groq' : 'Anthropic'} API Key required.`);
+                return;
+            }
+            const origin = document.getElementById('originInput').value.trim();
+            if (!origin) {
+                alert("System Error: Origin location required.");
+                return;
+            }
+
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('resultsPanel').style.display = 'none';
+            document.getElementById('statusDot').style.backgroundColor = 'var(--warning)';
+
+            const systemPrompt = `You are an AI Travel Alert Commander. Analyze traffic and weather. Use the web_search tool to find real-time info if necessary. Return ONLY a valid JSON object exactly matching this schema: 
+{ 
+  "trafficStatus": "clear|moderate|heavy", 
+  "trafficSummary": "string", 
+  "roadIncidents": ["string"], 
+  "etaMinutes": number, 
+  "alternateRoute": "string", 
+  "weatherOrigin": "string", 
+  "weatherDestination": "string", 
+  "temperatureCelsius": number, 
+  "humidityPercentage": number, 
+  "weatherAdvisory": "string", 
+  "activeAlerts": ["string"], 
+  "spokenBriefing": "string under 100 words", 
+  "riskLevel": "low|medium|high" 
+}`;
+            
+            let destStr = stops.length ? stops.join(' -> ') : 'Local Area';
+            let messages = [
+                { role: "user", content: `Analyze the route from ${origin} to ${destStr}.` }
+            ];
+
+            try {
+                let response = provider === 'groq' ? await callGroq(apiKey, systemPrompt, messages) : await callAnthropic(apiKey, systemPrompt, messages);
+                
+                // Handle tool use
+                if (response.stop_reason === 'tool_use') {
+                    const toolUse = response.content.find(c => c.type === 'tool_use');
+                    messages.push({
+                        role: "assistant",
+                        content: response.content
+                    });
+                    
+                    const query = toolUse.input.query;
+                    // Mocking real-time internet search since browser fetch to arbitrary domains faces CORS
+                    const mockToolResult = `Search results for "${query}": Traffic is moderate with isolated delays. Weather is generally stable, 22°C, 55% humidity. Occasional mild advisories in dense areas.`;
+                    
+                    messages.push({
+                        role: "user",
+                        content: [
+                            {
+                                type: "tool_result",
+                                tool_use_id: toolUse.id,
+                                content: mockToolResult
+                            }
+                        ]
+                    });
+                    
+                    response = provider === 'groq' ? await callGroq(apiKey, systemPrompt, messages) : await callAnthropic(apiKey, systemPrompt, messages);
+                }
+
+                const textContent = response.content.find(c => c.type === 'text').text;
+                
+                // Extract JSON
+                const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) throw new Error("AI did not return valid JSON");
+                const data = JSON.parse(jsonMatch[0]);
+                
+                analyzedData = data;
+                displayResults(data);
+                
+                document.getElementById('statusDot').style.backgroundColor = 'var(--safe)';
+                
+            } catch (err) {
+                console.error(err);
+                alert("Analysis Failed: " + err.message + "\n\nNote: If this is a CORS error, Anthropic blocks direct browser API calls. Ensure you use an extension or proxy to test locally.");
+                document.getElementById('statusDot').style.backgroundColor = 'var(--danger)';
+            } finally {
+                document.getElementById('loadingState').style.display = 'none';
+            }
+        }
+
+        async function callAnthropic(apiKey, system, messages) {
+            const req = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
+                    'anthropic-version': '2023-06-01',
+                    'anthropic-dangerously-allow-browser': 'true' // Required for client-side fetch, though actual CORS policy applies server-side
+                },
+                body: JSON.stringify({
+                    model: "claude-sonnet-4-20250514",
+                    max_tokens: 1024,
+                    system: system,
+                    messages: messages,
+                    tools: [
+                        {
+                            name: "web_search",
+                            description: "Search the internet for real-time traffic and weather data.",
+                            input_schema: {
+                                type: "object",
+                                properties: { query: { type: "string" } },
+                                required: ["query"]
+                            }
+                        }
+                    ]
+                })
+            });
+            
+            if (!req.ok) {
+                const errText = await req.text();
+                throw new Error(errText || req.statusText);
+            }
+            return req.json();
+        }
+
+        async function callGroq(apiKey, system, messages) {
+            let groqMessages = [{ role: 'system', content: system }, ...messages.map(m => {
+                if (m.role === 'assistant' && Array.isArray(m.content)) {
+                    let textMsg = m.content.find(c => c.type === 'text')?.text || '';
+                    let toolUse = m.content.find(c => c.type === 'tool_use');
+                    if (toolUse) {
+                        return { role: 'assistant', content: textMsg, tool_calls: [{ id: toolUse.id, type: 'function', function: { name: toolUse.name, arguments: JSON.stringify(toolUse.input) } }] };
+                    }
+                    return { role: 'assistant', content: textMsg };
+                }
+                if (m.role === 'user' && Array.isArray(m.content)) {
+                    let toolRes = m.content.find(c => c.type === 'tool_result');
+                    if (toolRes) {
+                        return { role: 'tool', tool_call_id: toolRes.tool_use_id, content: toolRes.content };
+                    }
+                    return { role: 'user', content: m.content.find(c => c.type === 'text')?.text || m.content };
+                }
+                return { role: m.role, content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content) };
+            })];
+
+            const req = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: "llama-3.3-70b-versatile",
+                    messages: groqMessages,
+                    tools: [{
+                        type: "function",
+                        function: {
+                            name: "web_search",
+                            description: "Search the internet for real-time traffic and weather data.",
+                            parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] }
+                        }
+                    }],
+                    temperature: 0.2
+                })
+            });
+            
+            if (!req.ok) {
+                const errText = await req.text();
+                throw new Error(errText || req.statusText);
+            }
+            const res = await req.json();
+            const choice = res.choices[0];
+            
+            if (choice.finish_reason === 'tool_calls') {
+                const tc = choice.message.tool_calls[0];
+                return {
+                    stop_reason: 'tool_use',
+                    content: [{ type: 'tool_use', id: tc.id, name: tc.function.name, input: JSON.parse(tc.function.arguments) }]
+                };
+            }
+            
+            return {
+                stop_reason: choice.finish_reason,
+                content: [{ type: 'text', text: choice.message.content }]
+            };
+        }
+
+        function displayResults(data) {
+            document.getElementById('resultsPanel').style.display = 'block';
+            
+            // Update Map
+            const origin = document.getElementById('originInput').value.trim();
+            const pendingStop = document.getElementById('stopInput').value.trim();
+            const mapIframe = document.getElementById('routeMap');
+            
+            if (mapIframe && origin) {
+                let finalDest = origin;
+                if (stops.length > 0) {
+                    finalDest = stops[stops.length - 1];
+                } else if (pendingStop) {
+                    finalDest = pendingStop; // catch if they forgot to click '+'
+                }
+                
+                // If origin and destination are the same, just show a single pin instead of routing A to A (which crashes the map zoom)
+                if (finalDest.toLowerCase() === origin.toLowerCase()) {
+                    mapIframe.src = `https://maps.google.com/maps?q=${encodeURIComponent(origin)}&z=14&output=embed`;
+                } else {
+                    mapIframe.src = `https://maps.google.com/maps?saddr=${encodeURIComponent(origin)}&daddr=${encodeURIComponent(finalDest)}&output=embed`;
+                }
+            }
+
+            // Risk Level Tag
+            const riskColors = { 'low': 'safe', 'medium': 'warning', 'high': 'danger' };
+            const riskClass = riskColors[data.riskLevel.toLowerCase()] || 'safe';
+            const riskTag = document.getElementById('resRiskTag');
+            riskTag.className = `tag tag-${riskClass}`;
+            riskTag.innerText = `RISK: ${data.riskLevel.toUpperCase()}`;
+
+            // Traffic
+            const tClass = riskColors[data.trafficStatus.toLowerCase()] || 'safe';
+            document.getElementById('resTraffic').innerHTML = `<span class="tag tag-${tClass}">${data.trafficStatus.toUpperCase()}</span>`;
+            document.getElementById('resTrafficSummary').innerText = data.trafficSummary || 'No summary.';
+            
+            const incList = document.getElementById('resIncidents');
+            incList.innerHTML = '';
+            if(data.roadIncidents && data.roadIncidents.length) {
+                data.roadIncidents.forEach(inc => incList.innerHTML += `<li>${inc}</li>`);
+            } else {
+                incList.innerHTML = '<li style="color:var(--text-muted)">None reported</li>';
+            }
+
+            // Route Insights
+            document.getElementById('resETA').innerText = `${data.etaMinutes} MINS`;
+            document.getElementById('resAltRoute').innerText = data.alternateRoute || 'None suggested';
+
+            // Weather
+            document.getElementById('resWeatherOrigin').innerText = data.weatherOrigin || 'N/A';
+            document.getElementById('resWeatherDest').innerText = data.weatherDestination || 'N/A';
+            document.getElementById('resTemp').innerText = `${data.temperatureCelsius}°C`;
+            document.getElementById('resHumidity').innerText = `${data.humidityPercentage}%`;
+            document.getElementById('resWeatherAdvisory').innerText = data.weatherAdvisory || 'Clear';
+
+            // Alerts
+            const alertsList = document.getElementById('resActiveAlerts');
+            alertsList.innerHTML = '';
+            if(data.activeAlerts && data.activeAlerts.length) {
+                data.activeAlerts.forEach(al => alertsList.innerHTML += `<li>${al}</li>`);
+            } else {
+                alertsList.innerHTML = '<li style="color:var(--text-muted)">No active alerts</li>';
+            }
+
+            // Briefing
+            document.getElementById('resBriefingText').innerText = `"${data.spokenBriefing}"`;
+        }
+    </script>
+</body>
+</html>
