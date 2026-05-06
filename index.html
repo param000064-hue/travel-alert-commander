@@ -479,6 +479,12 @@
                     <label>Groq API Key</label>
                     <input type="password" id="groqApiKey" placeholder="gsk_..." value="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">
                 </div>
+                <div class="input-group">
+                    <label>Voice Selector</label>
+                    <select id="voiceSelect" style="width: 100%; background: var(--bg); border: 1px solid var(--surface-alt); color: var(--text); padding: 10px 12px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.85rem; margin-bottom: 10px;">
+                        <option value="">System Default Voice</option>
+                    </select>
+                </div>
                 <div class="input-group" style="display:flex; gap:10px;">
                     <button onclick="testVoice()"><i class="ti ti-volume"></i> Test Voice</button>
                     <button onclick="requestNotificationPermission()"><i class="ti ti-bell"></i> Allow Prompts</button>
@@ -709,6 +715,37 @@
         }
 
         // --- Notifications & Voice ---
+        let availableVoices = [];
+        function populateVoices() {
+            availableVoices = window.speechSynthesis.getVoices();
+            const voiceSelect = document.getElementById('voiceSelect');
+            if (availableVoices.length === 0 || !voiceSelect) return;
+            
+            const currentVal = voiceSelect.value;
+            voiceSelect.innerHTML = '<option value="">System Default</option>';
+            
+            let hasPreferred = false;
+            availableVoices.forEach((voice, index) => {
+                if(voice.lang.startsWith('en')) {
+                    const option = document.createElement('option');
+                    option.textContent = voice.name;
+                    option.value = index;
+                    // Auto-select a premium/natural voice if found
+                    if (!hasPreferred && (voice.name.includes('Google') || voice.name.includes('Natural') || voice.name.includes('Online'))) {
+                        option.selected = true;
+                        hasPreferred = true;
+                    }
+                    voiceSelect.appendChild(option);
+                }
+            });
+            if (currentVal) voiceSelect.value = currentVal;
+        }
+        if (window.speechSynthesis !== undefined) {
+            window.speechSynthesis.onvoiceschanged = populateVoices;
+            // Attempt to populate immediately if already loaded
+            setTimeout(populateVoices, 1000); 
+        }
+
         function requestNotificationPermission() {
             if ("Notification" in window) {
                 Notification.requestPermission().then(permission => {
@@ -745,9 +782,15 @@
             currentUtterance.rate = 0.95;
             currentUtterance.pitch = 1.05;
             
-            const voices = window.speechSynthesis.getVoices();
-            const engVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
-            if (engVoice) currentUtterance.voice = engVoice;
+            const voiceSelect = document.getElementById('voiceSelect');
+            if (voiceSelect && voiceSelect.value !== "" && availableVoices.length > 0) {
+                currentUtterance.voice = availableVoices[voiceSelect.value];
+            } else {
+                const voices = window.speechSynthesis.getVoices();
+                const premiumVoice = voices.find(v => v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Online'));
+                const engVoice = premiumVoice || voices.find(v => v.lang.startsWith('en')) || voices[0];
+                if (engVoice) currentUtterance.voice = engVoice;
+            }
             
             const visualizer = document.getElementById('visualizer');
             const dot = document.getElementById('statusDot');
