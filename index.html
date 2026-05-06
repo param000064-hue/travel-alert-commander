@@ -986,7 +986,8 @@
   "riskLevel": "low|medium|high" 
 }`;
             
-            let destStr = stops.length ? stops.join(' -> ') : 'Local Area';
+            const pendingStop = document.getElementById('stopInput').value.trim();
+            let destStr = stops.length ? stops.join(' -> ') : (pendingStop ? pendingStop : 'Local Area');
             let messages = [
                 { role: "user", content: `Analyze the driving route from ${origin} to ${destStr}.` }
             ];
