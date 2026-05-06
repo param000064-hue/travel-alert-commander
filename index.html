@@ -969,7 +969,7 @@
             document.getElementById('resultsPanel').style.display = 'none';
             document.getElementById('statusDot').style.backgroundColor = 'var(--warning)';
 
-            const systemPrompt = `You are an AI Travel Alert Commander. Analyze traffic and weather. Use the web_search tool to find real-time info if necessary. Return ONLY a valid JSON object exactly matching this schema: 
+            const systemPrompt = `You are an AI Travel Alert Commander. Analyze traffic and weather. *CRITICAL*: Use your vast geographical knowledge to accurately estimate the real-world driving travel time (etaMinutes) between the origin and destination based on their actual physical distance. Do not default to short times for long intercity routes. Return ONLY a valid JSON object exactly matching this schema: 
 { 
   "trafficStatus": "clear|moderate|heavy", 
   "trafficSummary": "string", 
@@ -988,7 +988,7 @@
             
             let destStr = stops.length ? stops.join(' -> ') : 'Local Area';
             let messages = [
-                { role: "user", content: `Analyze the route from ${origin} to ${destStr}.` }
+                { role: "user", content: `Analyze the driving route from ${origin} to ${destStr}.` }
             ];
 
             try {
@@ -1004,7 +1004,7 @@
                     
                     const query = toolUse.input.query;
                     // Mocking real-time internet search since browser fetch to arbitrary domains faces CORS
-                    const mockToolResult = `Search results for "${query}": Traffic is moderate with isolated delays. Weather is generally stable, 22°C, 55% humidity. Occasional mild advisories in dense areas.`;
+                    const mockToolResult = `Live data for "${query}": Traffic is moderate. Weather is stable. *Crucial*: Calculate etaMinutes dynamically using your geographical knowledge of the distance between the origin and destination.`;
                     
                     messages.push({
                         role: "user",
