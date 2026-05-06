@@ -462,32 +462,37 @@
         <!-- Sidebar Controls -->
         <aside>
             <!-- System Settings -->
-            <div class="card">
-                <h2><i class="ti ti-settings"></i> System Config</h2>
-                <div class="input-group">
-                    <label>Provider</label>
-                    <select id="apiProvider" onchange="toggleProvider()" style="width: 100%; background: var(--bg); border: 1px solid var(--surface-alt); color: var(--text); padding: 10px 12px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.95rem; margin-bottom: 10px;">
-                        <option value="groq">Groq</option>
-                        <option value="anthropic">Anthropic</option>
-                    </select>
-                </div>
-                <div class="input-group" id="anthropicKeyGroup" style="display: none;">
-                    <label>Anthropic API Key</label>
-                    <input type="password" id="apiKey" placeholder="sk-ant-...">
-                </div>
-                <div class="input-group" id="groqKeyGroup">
-                    <label>Groq API Key</label>
-                    <input type="password" id="groqApiKey" placeholder="gsk_..." value="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">
-                </div>
-                <div class="input-group">
-                    <label>Voice Selector</label>
-                    <select id="voiceSelect" style="width: 100%; background: var(--bg); border: 1px solid var(--surface-alt); color: var(--text); padding: 10px 12px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.85rem; margin-bottom: 10px;">
-                        <option value="">System Default Voice</option>
-                    </select>
-                </div>
-                <div class="input-group" style="display:flex; gap:10px;">
-                    <button onclick="testVoice()"><i class="ti ti-volume"></i> Test Voice</button>
-                    <button onclick="requestNotificationPermission()"><i class="ti ti-bell"></i> Allow Prompts</button>
+            <div class="card" style="padding-bottom: 10px;">
+                <h2 onclick="toggleConfig()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0; padding-bottom: 10px; border-bottom: 1px solid var(--surface-alt);">
+                    <span><i class="ti ti-settings"></i> System Config</span>
+                    <i id="configArrow" class="ti ti-chevron-down"></i>
+                </h2>
+                <div id="configBody" style="display: none; margin-top: 15px;">
+                    <div class="input-group">
+                        <label>Provider</label>
+                        <select id="apiProvider" onchange="toggleProvider()" style="width: 100%; background: var(--bg); border: 1px solid var(--surface-alt); color: var(--text); padding: 10px 12px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.95rem; margin-bottom: 10px;">
+                            <option value="groq">Groq</option>
+                            <option value="anthropic">Anthropic</option>
+                        </select>
+                    </div>
+                    <div class="input-group" id="anthropicKeyGroup" style="display: none;">
+                        <label>Anthropic API Key</label>
+                        <input type="password" id="apiKey" placeholder="sk-ant-...">
+                    </div>
+                    <div class="input-group" id="groqKeyGroup">
+                        <label>Groq API Key</label>
+                        <input type="password" id="groqApiKey" placeholder="gsk_..." value="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">
+                    </div>
+                    <div class="input-group">
+                        <label>Voice Selector</label>
+                        <select id="voiceSelect" style="width: 100%; background: var(--bg); border: 1px solid var(--surface-alt); color: var(--text); padding: 10px 12px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.85rem; margin-bottom: 10px;">
+                            <option value="">System Default Voice</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="display:flex; gap:10px;">
+                        <button onclick="testVoice()"><i class="ti ti-volume"></i> Test Voice</button>
+                        <button onclick="requestNotificationPermission()"><i class="ti ti-bell"></i> Allow Prompts</button>
+                    </div>
                 </div>
             </div>
 
@@ -655,6 +660,18 @@
 
     <script>
         // --- State ---
+        function toggleConfig() {
+            const body = document.getElementById('configBody');
+            const arrow = document.getElementById('configArrow');
+            if (body.style.display === 'none') {
+                body.style.display = 'block';
+                arrow.className = 'ti ti-chevron-up';
+            } else {
+                body.style.display = 'none';
+                arrow.className = 'ti ti-chevron-down';
+            }
+        }
+
         function toggleProvider() {
             const provider = document.getElementById('apiProvider').value;
             if(provider === 'groq') {
