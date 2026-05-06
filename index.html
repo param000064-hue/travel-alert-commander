@@ -713,9 +713,6 @@
             document.getElementById('originInput').value = '';
             document.getElementById('resultsPanel').style.display = 'none';
             analyzedData = null;
-            scheduledAlerts.forEach(a => clearTimeout(a.timeoutId));
-            scheduledAlerts = [];
-            renderAlerts();
             stopSpeaking();
         }
 
