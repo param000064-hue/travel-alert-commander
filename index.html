@@ -830,7 +830,7 @@
         }
 
         // --- Scheduler ---
-        function setupDailyCommute() {
+        function setupDailyCommute(silent = false) {
             const home = "Narayan Elite, behind Mauli Heights, Sector 23, Ghansoli, Navi Mumbai, Maharashtra 400701";
             const office = "Millenium Business Park, MIDC Industrial Area, Sector 3, Kopar Khairane, Navi Mumbai, Maharashtra 400710";
             
@@ -844,7 +844,9 @@
             stops = [office];
             renderStops();
             
-            alert("Daily Commute Activated: 9:00 AM (To Office) & 5:30 PM (To Home). These will auto-repeat daily.");
+            if (!silent) {
+                alert("Daily Commute Activated: 9:00 AM (To Office) & 5:30 PM (To Home). These will auto-repeat daily.");
+            }
         }
 
         function createScheduledAlert(timeInput, originStr, stopsArr) {
@@ -1206,6 +1208,14 @@
             // Briefing
             document.getElementById('resBriefingText').innerText = `"${data.spokenBriefing}"`;
         }
+
+        // Auto-initialize the daily commute schedules on load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Check if there are no existing alerts, so we don't duplicate on soft reloads
+            if (scheduledAlerts.length === 0) {
+                setupDailyCommute(true); // pass true to skip the annoying alert popup on load
+            }
+        });
     </script>
 </body>
 </html>
