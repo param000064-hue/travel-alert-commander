@@ -526,8 +526,13 @@
             <!-- Notification Scheduler -->
             <div class="card">
                 <h2><i class="ti ti-clock"></i> Scheduled Alerts</h2>
+                
+                <button class="action" style="margin-bottom: 20px; width: 100%; justify-content: center; border-color: var(--info);" onclick="setupDailyCommute()">
+                    <i class="ti ti-briefcase"></i> Auto-Set Daily Commute (9am & 5:30pm)
+                </button>
+
                 <div class="input-group">
-                    <label>Set Briefing Time</label>
+                    <label>Set Custom Briefing Time</label>
                     <div style="display: flex; gap: 10px;">
                         <input type="time" id="alertTime">
                         <button class="action" onclick="scheduleAlert()" style="width: auto;">Set Alert</button>
@@ -825,32 +830,54 @@
         }
 
         // --- Scheduler ---
-        function scheduleAlert() {
-            const timeInput = document.getElementById('alertTime').value;
-            if (!timeInput) return;
+        function setupDailyCommute() {
+            const home = "Narayan Elite, behind Mauli Heights, Sector 23, Ghansoli, Navi Mumbai, Maharashtra 400701";
+            const office = "Millenium Business Park, MIDC Industrial Area, Sector 3, Kopar Khairane, Navi Mumbai, Maharashtra 400710";
             
+            scheduledAlerts.forEach(a => clearTimeout(a.timeoutId));
+            scheduledAlerts = [];
+            
+            createScheduledAlert("09:00", home, [office]);
+            createScheduledAlert("17:30", office, [home]);
+            
+            document.getElementById('originInput').value = home;
+            stops = [office];
+            renderStops();
+            
+            alert("Daily Commute Activated: 9:00 AM (To Office) & 5:30 PM (To Home). These will auto-repeat daily.");
+        }
+
+        function createScheduledAlert(timeInput, originStr, stopsArr) {
             const now = new Date();
             const [hours, minutes] = timeInput.split(':').map(Number);
             let target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
             
             if (target < now) {
-                target.setDate(target.getDate() + 1); // schedule for tomorrow
+                target.setDate(target.getDate() + 1);
             }
             
-            const id = Date.now();
+            const id = Date.now() + Math.floor(Math.random() * 1000);
             const timeToWait = target.getTime() - now.getTime();
             
             const timeoutId = setTimeout(() => {
                 triggerAlert(id);
             }, timeToWait);
             
-            scheduledAlerts.push({ id, targetTime: target, timeoutId, timeString: timeInput });
-            document.getElementById('alertTime').value = '';
+            scheduledAlerts.push({ id, targetTime: target, timeoutId, timeString: timeInput, origin: originStr, stops: stopsArr });
             renderAlerts();
-
+            
             if (!timerInterval) {
                 timerInterval = setInterval(updateTimers, 1000);
             }
+        }
+
+        function scheduleAlert() {
+            const timeInput = document.getElementById('alertTime').value;
+            if (!timeInput) return;
+            const originStr = document.getElementById('originInput').value.trim();
+            if (!originStr) return alert("Please set an origin first.");
+            createScheduledAlert(timeInput, originStr, [...stops]);
+            document.getElementById('alertTime').value = '';
         }
 
         function removeAlert(id) {
@@ -893,9 +920,25 @@
             });
         }
 
-        function triggerAlert(id) {
+        async function triggerAlert(id) {
+            // Find alert before removing it so we can grab its data
+            const alertObj = scheduledAlerts.find(a => a.id === id);
+            if (!alertObj) return;
             removeAlert(id);
-            const text = analyzedData ? analyzedData.spokenBriefing : "Attention Commander. Scheduled alert triggered. Route analysis is pending.";
+
+            // Temporarily set UI to alert route and fetch fresh data
+            if (alertObj.origin) {
+                document.getElementById('originInput').value = alertObj.origin;
+                stops = alertObj.stops || [];
+                renderStops();
+                try {
+                    await analyzeRoute();
+                } catch(e) {
+                    console.error(e);
+                }
+            }
+
+            const text = analyzedData ? analyzedData.spokenBriefing : "Attention Commander. Scheduled alert triggered. Route analysis failed.";
             speak(text);
             
             if ("Notification" in window && Notification.permission === 'granted') {
@@ -904,6 +947,9 @@
                     icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iIzRmOGVmNyIvPjwvc3ZnPg=='
                 });
             }
+            
+            // Auto-reschedule for tomorrow
+            createScheduledAlert(alertObj.timeString, alertObj.origin, alertObj.stops);
         }
 
         // --- AI Agent logic ---
