@@ -1104,9 +1104,15 @@ Return ONLY a valid JSON object exactly matching this schema:
                 let trafficStr = data.trafficSummary || data.trafficStatus || "normal";
                 trafficStr = trafficStr.replace(/^traffic\s*is\s*/i, '').replace(/^traffic:\s*/i, '').trim();
                 const routeStr = data.alternateRoute || "your current route";
-                const weatherStr = `${data.weatherAdvisory && data.weatherAdvisory !== 'Clear' && data.weatherAdvisory !== 'None' ? data.weatherAdvisory + ', ' : ''}${data.temperatureCelsius || '--'} degrees Celsius`;
+                let weatherSentence = "";
+                const adv = data.weatherAdvisory;
+                if (adv && adv !== 'Clear' && adv !== 'None') {
+                    weatherSentence = `The temperature is ${data.temperatureCelsius || '--'} degrees Celsius, There is ${adv}.`;
+                } else {
+                    weatherSentence = `The temperature is ${data.temperatureCelsius || '--'} degrees Celsius, There is no weather.`;
+                }
                 
-                data.spokenBriefing = `Hello Manish, here is the summary. Your route is from ${currentOrigin} to ${currentDest}. Traffic is ${trafficStr}. The best suggested free route is ${routeStr}. The weather is ${weatherStr}. Happy Journey.`;
+                data.spokenBriefing = `Hello Manish, here is the summary. Your route is from ${currentOrigin} to ${currentDest}. Traffic is ${trafficStr}. The best suggested free route is ${routeStr}. ${weatherSentence} Happy Journey.`;
                 
                 analyzedData = data;
                 displayResults(data);
