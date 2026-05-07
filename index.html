@@ -1109,7 +1109,7 @@ Return ONLY a valid JSON object exactly matching this schema:
                 if (adv && adv !== 'Clear' && adv !== 'None') {
                     weatherSentence = `The temperature is ${data.temperatureCelsius || '--'} degrees Celsius, There is ${adv}.`;
                 } else {
-                    weatherSentence = `The temperature is ${data.temperatureCelsius || '--'} degrees Celsius, There is no weather.`;
+                    weatherSentence = `The temperature is ${data.temperatureCelsius || '--'} degrees Celsius, There is no weather advisory.`;
                 }
                 
                 data.spokenBriefing = `Hello Manish, here is the summary. Your route is from ${currentOrigin} to ${currentDest}. Traffic is ${trafficStr}. The best suggested free route is ${routeStr}. ${weatherSentence} Happy Journey.`;
