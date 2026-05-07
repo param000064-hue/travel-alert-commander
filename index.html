@@ -1033,7 +1033,7 @@
             document.getElementById('resultsPanel').style.display = 'none';
             document.getElementById('statusDot').style.backgroundColor = 'var(--warning)';
 
-            const systemPrompt = `You are an AI Travel Alert Commander. Analyze traffic and weather. *CRITICAL*: Use your vast geographical knowledge to accurately estimate the real-world driving travel time (etaMinutes) between the origin and destination based on their actual physical distance. Do not default to short times for long intercity routes.
+            const systemPrompt = `You are an AI Travel Alert Commander. Analyze traffic and weather. *CRITICAL*: Use your vast geographical knowledge to accurately estimate the real-world driving travel time (etaMinutes) between the origin and destination based on their actual physical distance. Assume urban driving speeds of 25-35 km/h. Do NOT wildly overestimate local trips under 10km.
 
 CRITICAL SPOKEN BRIEFING INSTRUCTION:
 The 'spokenBriefing' field MUST EXACTLY match this template, filling in the bracketed info:
