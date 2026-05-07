@@ -772,21 +772,33 @@
             const currentVal = voiceSelect.value;
             voiceSelect.innerHTML = '<option value="">System Default</option>';
             
-            let hasPreferred = false;
+            let avaIndex = -1;
+            let backupIndex = -1;
+            
             availableVoices.forEach((voice, index) => {
                 if(voice.lang.startsWith('en')) {
                     const option = document.createElement('option');
                     option.textContent = voice.name;
                     option.value = index;
-                    // Auto-select a premium/natural voice if found
-                    if (!hasPreferred && (voice.name.includes('Google') || voice.name.includes('Natural') || voice.name.includes('Online'))) {
-                        option.selected = true;
-                        hasPreferred = true;
-                    }
                     voiceSelect.appendChild(option);
+                    
+                    if (voice.name.includes('Ava Online (Natural)')) {
+                        avaIndex = index;
+                    } else if (backupIndex === -1 && (voice.name.includes('Google') || voice.name.includes('Natural') || voice.name.includes('Online'))) {
+                        backupIndex = index;
+                    }
                 }
             });
-            if (currentVal) voiceSelect.value = currentVal;
+            
+            if (!currentVal) {
+                if (avaIndex !== -1) {
+                    voiceSelect.value = avaIndex;
+                } else if (backupIndex !== -1) {
+                    voiceSelect.value = backupIndex;
+                }
+            } else {
+                voiceSelect.value = currentVal;
+            }
         }
         if (window.speechSynthesis !== undefined) {
             window.speechSynthesis.onvoiceschanged = populateVoices;
@@ -835,8 +847,9 @@
                 currentUtterance.voice = availableVoices[voiceSelect.value];
             } else {
                 const voices = window.speechSynthesis.getVoices();
+                const avaVoice = voices.find(v => v.name.includes('Ava Online (Natural)'));
                 const premiumVoice = voices.find(v => v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Online'));
-                const engVoice = premiumVoice || voices.find(v => v.lang.startsWith('en')) || voices[0];
+                const engVoice = avaVoice || premiumVoice || voices.find(v => v.lang.startsWith('en')) || voices[0];
                 if (engVoice) currentUtterance.voice = engVoice;
             }
             
