@@ -1088,9 +1088,10 @@ Return ONLY a valid JSON object exactly matching this schema:
                 // Force strict format programmatically rather than relying on LLM to follow the prompt
                 const currentOrigin = document.getElementById('originInput').value.trim();
                 let currentDest = stops.length ? stops[stops.length - 1] : (document.getElementById('stopInput').value.trim() || 'your destination');
-                const trafficStr = data.trafficSummary || data.trafficStatus || "normal";
+                let trafficStr = data.trafficSummary || data.trafficStatus || "normal";
+                trafficStr = trafficStr.replace(/^traffic\s*is\s*/i, '').replace(/^traffic:\s*/i, '').trim();
                 const routeStr = data.alternateRoute || "your current route";
-                const weatherStr = `${data.weatherAdvisory && data.weatherAdvisory !== 'Clear' ? data.weatherAdvisory + ', ' : ''}${data.temperatureCelsius || '--'} degrees Celsius`;
+                const weatherStr = `${data.weatherAdvisory && data.weatherAdvisory !== 'Clear' && data.weatherAdvisory !== 'None' ? data.weatherAdvisory + ', ' : ''}${data.temperatureCelsius || '--'} degrees Celsius`;
                 
                 data.spokenBriefing = `Hello Manish, here is the summary. Your route is from ${currentOrigin} to ${currentDest}. Traffic is ${trafficStr}. The best suggested free route is ${routeStr}. The weather is ${weatherStr}. Happy Journey.`;
                 
