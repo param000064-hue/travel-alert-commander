@@ -932,10 +932,31 @@
                         <input type="password" id="groqApiKey" placeholder="gsk_..." value="" onchange="saveKeys()">
                     </div>
                     <div class="input-group">
-                        <label>Voice Selector</label>
-                        <select id="voiceSelect" style="width: 100%; background: var(--bg); border: 1px solid var(--surface-alt); color: var(--text); padding: 10px 12px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.85rem; margin-bottom: 10px;">
-                            <option value="">System Default Voice</option>
+                        <label>Voice Engine</label>
+                        <select id="voiceEngine" onchange="toggleVoiceEngine(); saveKeys();" style="width: 100%; background: var(--bg); border: 1px solid var(--surface-alt); color: var(--text); padding: 10px 12px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.95rem; margin-bottom: 10px;">
+                            <option value="system">Web Speech (System)</option>
+                            <option value="elevenlabs">ElevenLabs (Premium)</option>
                         </select>
+                    </div>
+
+                    <div id="systemVoiceGroup">
+                        <div class="input-group">
+                            <label>System Voice</label>
+                            <select id="voiceSelect" onchange="saveKeys()" style="width: 100%; background: var(--bg); border: 1px solid var(--surface-alt); color: var(--text); padding: 10px 12px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.85rem; margin-bottom: 10px;">
+                                <option value="">System Default Voice</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="elevenLabsGroup" style="display: none;">
+                        <div class="input-group">
+                            <label>ElevenLabs API Key</label>
+                            <input type="password" id="elevenLabsKey" placeholder="xi-api-key..." onchange="saveKeys()">
+                        </div>
+                        <div class="input-group">
+                            <label>ElevenLabs Voice ID</label>
+                            <input type="text" id="elevenLabsVoice" placeholder="e.g., EXAVITQu4vr4xnSDxMaL" onchange="saveKeys()">
+                        </div>
                     </div>
                     <div class="input-group" style="display:flex; gap:10px;">
                         <button onclick="testVoice()"><i class="ti ti-volume"></i> Test Voice</button>
@@ -1108,7 +1129,6 @@
             </div>
         </main>
     </div>
-
     <script>
         // --- State ---
         function toggleConfig() {
@@ -1133,23 +1153,50 @@
                 document.getElementById('anthropicKeyGroup').style.display = 'block';
             }
         }
-        
+
+        function toggleVoiceEngine() {
+            const engine = document.getElementById('voiceEngine').value;
+            if (engine === 'system') {
+                document.getElementById('systemVoiceGroup').style.display = 'block';
+                document.getElementById('elevenLabsGroup').style.display = 'none';
+            } else {
+                document.getElementById('systemVoiceGroup').style.display = 'none';
+                document.getElementById('elevenLabsGroup').style.display = 'block';
+            }
+        }
+
         function saveKeys() {
             localStorage.setItem('tac_groq_key', document.getElementById('groqApiKey').value);
             localStorage.setItem('tac_anthropic_key', document.getElementById('apiKey').value);
             localStorage.setItem('tac_provider', document.getElementById('apiProvider').value);
+            localStorage.setItem('tac_voice_engine', document.getElementById('voiceEngine').value);
+            localStorage.setItem('tac_elevenlabs_key', document.getElementById('elevenLabsKey').value);
+            localStorage.setItem('tac_elevenlabs_voice', document.getElementById('elevenLabsVoice').value);
+            localStorage.setItem('tac_voice_index', document.getElementById('voiceSelect').value);
         }
 
         function loadKeys() {
             const gk = localStorage.getItem('tac_groq_key');
             const ak = localStorage.getItem('tac_anthropic_key');
             const prov = localStorage.getItem('tac_provider');
+            const engine = localStorage.getItem('tac_voice_engine');
+            const elk = localStorage.getItem('tac_elevenlabs_key');
+            const elv = localStorage.getItem('tac_elevenlabs_voice');
+            const vi = localStorage.getItem('tac_voice_index');
+
             if(gk) document.getElementById('groqApiKey').value = gk;
             if(ak) document.getElementById('apiKey').value = ak;
             if(prov) {
                 document.getElementById('apiProvider').value = prov;
                 toggleProvider();
             }
+            if(engine) {
+                document.getElementById('voiceEngine').value = engine;
+                toggleVoiceEngine();
+            }
+            if(elk) document.getElementById('elevenLabsKey').value = elk;
+            if(elv) document.getElementById('elevenLabsVoice').value = elv;
+            if(vi) document.getElementById('voiceSelect').value = vi;
         }
 
         let stops = [];
@@ -1299,6 +1346,12 @@
         function speak(text) {
             stopSpeaking();
             
+            const engine = document.getElementById('voiceEngine').value;
+            if (engine === 'elevenlabs') {
+                speakElevenLabs(text);
+                return;
+            }
+
             if (!("speechSynthesis" in window)) {
                 alert("Speech synthesis not supported in this browser.");
                 return;
@@ -1341,9 +1394,65 @@
             window.speechSynthesis.speak(currentUtterance);
         }
 
+        let currentAudio = null;
+        async function speakElevenLabs(text) {
+            const apiKey = document.getElementById('elevenLabsKey').value.trim();
+            const voiceId = document.getElementById('elevenLabsVoice').value.trim() || 'EXAVITQu4vr4xnSDxMaL';
+            
+            if (!apiKey) {
+                alert("ElevenLabs API Key required for Premium Voice. Please enter it in System Config.");
+                return;
+            }
+
+            const visualizer = document.getElementById('visualizer');
+            const dot = document.getElementById('statusDot');
+            
+            visualizer.classList.add('active');
+            dot.style.backgroundColor = 'var(--info)';
+
+            try {
+                const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'xi-api-key': apiKey
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        model_id: "eleven_monolingual_v1",
+                        voice_settings: { stability: 0.5, similarity_boost: 0.5 }
+                    })
+                });
+
+                if (!response.ok) throw new Error("ElevenLabs API call failed. Check your API key and Voice ID.");
+
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                currentAudio = new Audio(audioUrl);
+                
+                currentAudio.onended = () => {
+                    visualizer.classList.remove('active');
+                    dot.style.backgroundColor = 'var(--safe)';
+                    URL.revokeObjectURL(audioUrl);
+                    currentAudio = null;
+                };
+                
+                currentAudio.play();
+            } catch (err) {
+                console.error(err);
+                alert("Premium Voice Error: " + err.message);
+                visualizer.classList.remove('active');
+                dot.style.backgroundColor = 'var(--safe)';
+            }
+        }
+
         function stopSpeaking() {
             if ("speechSynthesis" in window) {
                 window.speechSynthesis.cancel();
+            }
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
             }
             document.getElementById('visualizer').classList.remove('active');
             const dot = document.getElementById('statusDot');
