@@ -925,11 +925,11 @@
                     </div>
                     <div class="input-group" id="anthropicKeyGroup" style="display: none;">
                         <label>Anthropic API Key</label>
-                        <input type="password" id="apiKey" placeholder="sk-ant-..." onchange="saveKeys()">
+                        <input type="password" id="apiKey" placeholder="sk-ant-..." oninput="saveKeys()">
                     </div>
                     <div class="input-group" id="groqKeyGroup">
                         <label>Groq API Key</label>
-                        <input type="password" id="groqApiKey" placeholder="gsk_..." value="" onchange="saveKeys()">
+                        <input type="password" id="groqApiKey" placeholder="gsk_..." value="" oninput="saveKeys()">
                     </div>
                     <div class="input-group">
                         <label>Voice Engine</label>
@@ -951,11 +951,11 @@
                     <div id="elevenLabsGroup" style="display: none;">
                         <div class="input-group">
                             <label>ElevenLabs API Key</label>
-                            <input type="password" id="elevenLabsKey" placeholder="xi-api-key..." onchange="saveKeys()">
+                            <input type="password" id="elevenLabsKey" placeholder="xi-api-key..." oninput="saveKeys()">
                         </div>
                         <div class="input-group">
                             <label>ElevenLabs Voice ID</label>
-                            <input type="text" id="elevenLabsVoice" placeholder="e.g., EXAVITQu4vr4xnSDxMaL" onchange="saveKeys()">
+                            <input type="text" id="elevenLabsVoice" placeholder="e.g., EXAVITQu4vr4xnSDxMaL" oninput="saveKeys()">
                         </div>
                     </div>
                     <div class="input-group" style="display:flex; gap:10px;">
@@ -1303,7 +1303,14 @@
                 }
             });
             
-            // Always force-select Ava Online (Natural) as the default
+            // Restore saved voice preference if it exists
+            const savedVoiceIndex = localStorage.getItem('tac_voice_index');
+            if (savedVoiceIndex && availableVoices[savedVoiceIndex]) {
+                voiceSelect.value = savedVoiceIndex;
+                return;
+            }
+
+            // Always force-select Ava Online (Natural) as the default if no preference
             if (avaIndex !== -1) {
                 voiceSelect.value = avaIndex;
                 avaVoiceSelected = true;
@@ -1400,9 +1407,13 @@
             const voiceId = document.getElementById('elevenLabsVoice').value.trim() || 'EXAVITQu4vr4xnSDxMaL';
             
             if (!apiKey) {
+                // Auto-open config if key is missing
+                const body = document.getElementById('configBody');
+                if (body && body.style.display === 'none') toggleConfig();
                 alert("ElevenLabs API Key required for Premium Voice. Please enter it in System Config.");
                 return;
             }
+            saveKeys(); // Persistence safeguard
 
             const visualizer = document.getElementById('visualizer');
             const dot = document.getElementById('statusDot');
@@ -1598,9 +1609,13 @@
             const provider = document.getElementById('apiProvider').value;
             const apiKey = provider === 'groq' ? document.getElementById('groqApiKey').value.trim() : document.getElementById('apiKey').value.trim();
             if (!apiKey) {
+                // Auto-open config if key is missing
+                const body = document.getElementById('configBody');
+                if (body && body.style.display === 'none') toggleConfig();
                 alert(`System Error: ${provider === 'groq' ? 'Groq' : 'Anthropic'} API Key required.`);
                 return;
             }
+            saveKeys(); // Persistence safeguard
             const origin = document.getElementById('originInput').value.trim();
             if (!origin) {
                 alert("System Error: Origin location required.");
