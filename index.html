@@ -1197,6 +1197,14 @@
             if(elk) document.getElementById('elevenLabsKey').value = elk;
             if(elv) document.getElementById('elevenLabsVoice').value = elv;
             if(vi) document.getElementById('voiceSelect').value = vi;
+
+            // Auto-open config if no primary keys are found
+            if (!gk && !ak && !elk) {
+                const body = document.getElementById('configBody');
+                if (body && body.style.display === 'none') {
+                    toggleConfig();
+                }
+            }
         }
 
         let stops = [];
