@@ -1638,7 +1638,15 @@
             document.getElementById('resultsPanel').style.display = 'none';
             document.getElementById('statusDot').style.backgroundColor = 'var(--warning)';
 
-            const systemPrompt = `You are an AI Travel Alert Commander. Analyze traffic and weather. *CRITICAL*: Use your vast geographical knowledge to accurately estimate the real-world driving travel time (etaMinutes) between the origin and destination based on their actual physical distance. Assume urban driving speeds of 25-35 km/h. Do NOT wildly overestimate local trips under 10km.
+            const systemPrompt = `You are an AI Travel Alert Commander. Analyze traffic and weather. 
+            
+            *CRITICAL TRAVEL TIME LOGIC*: 
+            You must accurately estimate the real-world driving travel time (etaMinutes). 
+            - For distances under 10km, typical time is 15-20 mins in moderate traffic. 
+            - Do NOT default to high numbers like 25+ mins for very short local trips. 
+            - Use your knowledge of the specific city (e.g., Navi Mumbai) to judge speeds.
+            - Base your 'etaMinutes' on the most probable real-time duration shown on GPS services.
+            - Be precise: 18 mins is better than 20 mins if the route is short.`;
 
 CRITICAL SPOKEN BRIEFING INSTRUCTION:
 The 'spokenBriefing' field MUST EXACTLY match this template, filling in the bracketed info:
